@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>متابعة تقدم الطلاب</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f2f2f2;
+      text-align: right;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .logo {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 60px;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      background-color: #003366;
+      padding: 10px 0;
+      border-radius: 10px;
+      margin-top: 80px;
+    }
+
+    .tab {
+      color: white;
+      cursor: pointer;
+      padding: 10px 15px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .tab:hover {
+      background-color: #005599;
+    }
+
+    .active-tab {
+      background-color: #0074D9;
+      font-weight: bold;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .active-section {
+      display: block;
+    }
+
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .input-row input, .input-row select {
+      flex: 1 1 180px;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 15px 0;
+      justify-content: center;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      background-color: #003366;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background-color: #005599;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background-color: #0074D9;
+      color: white;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .hide-on-capture {
+      display: table-cell;
+    }
+
+    .saved-days {
+      margin-top: 20px;
+      padding: 10px;
+      background: #eee;
+      border-radius: 5px;
+    }
+
+    .saved-days ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .saved-days li {
+      margin: 10px 0;
+      padding: 5px;
+      background: #ddd;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .tabs {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .logo {
+        width: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="kkk.jpg" class="logo" alt="شعار">
+    <div class="title">سجل متابعة الطالب بشكل يومي</div>
+
+    <div class="tabs">
+      <div class="tab active-tab" onclick="showSection('recite')">📖 التسميع</div>
+      <div class="tab" onclick="showSection('absence')">❌ الغياب</div>
+      <div class="tab" onclick="showSection('statistics')">📊 الإحصائيات</div>
+    </div>
+
+    <div id="reciteSection" class="section active-section">
+      <h2>التسميع</h2>
+      <div class="input-row">
+        <input type="text" id="studentName" placeholder="اسم الطالب">
+        <input type="number" id="pages" placeholder="عدد الصفحات">
+        <input type="number" id="pageNumber" placeholder="رقم الصفحة">
+        <select id="grade">
+          <option value="ضعيف">ضعيف</option>
+          <option value="جيد">جيد</option>
+          <option value="جيد جدًا">جيد جدًا</option>
+          <option value="ممتاز">ممتاز</option>
+        </select>
+        <select id="reciteType">
+          <option value="جديد">جديد</option>
+          <option value="تسميع">تسميع</option>
+          <option value="مراجعة">مراجعة</option>
+        </select>
+        <input type="date" id="date">
+      </div>
+      <div class="buttons">
+        <button onclick="addStudent()"><i class="fas fa-plus"></i> إضافة بيانات اليوم</button>
+        <button onclick="saveDay()"><i class="fas fa-save"></i> حفظ اليوم</button>
+        <button onclick="captureTable('tableSection')">📸 التقاط صورة للجدول</button>
+      </div>
+      <div class="table-container" id="tableSection">
+        <table>
+          <thead>
+            <tr>
+              <th>الرقم</th>
+              <th>اسم الطالب</th>
+              <th>عدد الصفحات</th>
+              <th>رقم الصفحة</th>
+              <th>التقدير</th>
+              <th>نوع التسميع</th>
+              <th>التاريخ</th>
+              <th class="hide-on-capture">🗑</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="saved-days">
+      <h3>الأيام المحفوظة</h3>
+      <ul id="savedDaysList"></ul>
+    </div>
+
+    <div id="absenceSection" class="section">
+      <h2>تسجيل الغياب</h2>
+      <div class="input-row">
+        <input type="text" id="absenceName" placeholder="اسم الطالب">
+        <input type="text" id="absenceNote" placeholder="ملاحظة (اختياري)">
+      </div>
+      <div class="buttons">
+        <button onclick="addAbsence()"><i class="fas fa-plus"></i> إضافة غياب</button>
+        <button onclick="captureTable('absenceSection')">📸 التقاط صورة للجدول</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>الرقم</th>
+              <th>اسم الطالب</th>
+              <th>التاريخ</th>
+              <th>الملاحظة</th>
+            </tr>
+          </thead>
+          <tbody id="absenceTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="statisticsSection" class="section">
+      <h2>إحصائيات الطلاب</h2>
+      <div class="input-row">
+        <input type="date" id="startDate" placeholder="من تاريخ">
+        <input type="date" id="endDate" placeholder="إلى تاريخ">
+        <button onclick="generateStatistics()"><i class="fas fa-chart-bar"></i> توليد الإحصائيات</button>
+        <button onclick="captureTable('statisticsSection')">📸 التقاط صورة للجدول</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>اسم الطالب</th>
+              <th>مجموع الصفحات الجديدة</th>
+              <th>عدد أيام الغياب</th>
+            </tr>
+          </thead>
+          <tbody id="statisticsTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let students = [];
+    let absences = [];
+    let savedDays = [];
+
+    function saveToLocalStorage() {
+      localStorage.setItem("students", JSON.stringify(students));
+      localStorage.setItem("absences", JSON.stringify(absences));
+      localStorage.setItem("savedDays", JSON.stringify(savedDays));
+    }
+
+    function showSection(section) {
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active-section'));
+      document.getElementById(section + 'Section').classList.add('active-section');
+
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active-tab'));
+      document.querySelector(`.tab:nth-child(${['recite','absence','statistics'].indexOf(section)+1})`).classList.add('active-tab');
+    }
+
+    function addStudent() {
+      const name = document.getElementById('studentName').value;
+      const pages = parseInt(document.getElementById('pages').value);
+      const pageNumber = document.getElementById('pageNumber').value;
+      const grade = document.getElementById('grade').value;
+      const reciteType = document.getElementById('reciteType').value;
+      const dateInput = document.getElementById('date');
+      let date = dateInput.value;
+      if (!date) {
+        const today = new Date();
+        date = today.toISOString().split('T')[0];
+        dateInput.value = date;
+      }
+
+      if (!name || !pages || !pageNumber || !grade || !reciteType || !date) {
+        alert("يرجى ملء جميع الحقول");
+        return;
+      }
+
+      students.push({ name, pages, pageNumber, grade, reciteType, date });
+      updateStudentTable();
+      clearStudentInputs();
+      saveToLocalStorage();
+    }
+
+    function saveDay() {
+      const date = document.getElementById('date').value;
+      if (!date) {
+        alert("يرجى تحديد تاريخ اليوم");
+        return;
+      }
+      savedDays.push({ date, students: [...students] });
+      updateSavedDaysList();
+      students = []; // Clear the current day's data
+      updateStudentTable();
+      saveToLocalStorage();
+    }
+
+    function updateSavedDaysList() {
+      const list = document.getElementById('savedDaysList');
+      list.innerHTML = '';
+      savedDays.forEach((day, index) => {
+        const li = document.createElement('li');
+        li.textContent = `اليوم: ${day.date}`;
+        li.onclick = () => loadSavedDay(index);
+        list.appendChild(li);
+      });
+    }
+
+    function loadSavedDay(index) {
+      const day = savedDays[index];
+      students = [...day.students];
+      updateStudentTable();
+    }
+
+    function updateStudentTable() {
+      const table = document.getElementById('studentsTable');
+      table.innerHTML = '';
+      students.forEach((student, index) => {
+        const row = table.insertRow();
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${student.name}</td>
+          <td>${student.pages}</td>
+          <td>${student.pageNumber}</td>
+          <td>${student.grade}</td>
+          <td>${student.reciteType}</td>
+          <td>${student.date}</td>
+          <td class="hide-on-capture"><button onclick="deleteRow(this, 'students')">❌</button></td>
+        `;
+      });
+    }
+
+    function addAbsence() {
+      const name = document.getElementById('absenceName').value;
+      const note = document.getElementById('absenceNote').value;
+      const today = new Date().toISOString().split('T')[0];
+
+      if (!name) {
+        alert("يرجى إدخال اسم الطالب");
+        return;
+      }
+
+      absences.push({ name, date: today, note });
+      updateAbsenceTable();
+      clearAbsenceInputs();
+      saveToLocalStorage();
+    }
+
+    function updateAbsenceTable() {
+      const table = document.getElementById('absenceTable');
+      table.innerHTML = '';
+      absences.forEach((absence, index) => {
+        const row = table.insertRow();
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${absence.name}</td>
+          <td>${absence.date}</td>
+          <td>${absence.note || ''}</td>
+        `;
+      });
+    }
+
+    function deleteRow(btn, type) {
+      const row = btn.parentNode.parentNode;
+      const index = row.rowIndex - 1;
+      if (type === 'students') {
+        students.splice(index, 1);
+        updateStudentTable();
+        saveToLocalStorage();
+      }
+    }
+
+    function clearStudentInputs() {
+      document.getElementById('studentName').value = '';
+      document.getElementById('pages').value = '';
+      document.getElementById('pageNumber').value = '';
+      document.getElementById('grade').value = 'ضعيف';
+      document.getElementById('reciteType').value = 'جديد';
+    }
+
+    function clearAbsenceInputs() {
+      document.getElementById('absenceName').value = '';
+      document.getElementById('absenceNote').value = '';
+    }
+
+    function generateStatistics() {
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+
+      if (!startDate || !endDate) {
+        alert("يرجى إدخال التاريخين");
+        return;
+      }
+
+      const filteredStudents = students.filter(student => {
+        const date = new Date(student.date);
+        return date >= new Date(startDate) && date <= new Date(endDate);
+      });
+
+      const statistics = filteredStudents.reduce((acc, student) => {
+        if (!acc[student.name]) {
+          acc[student.name] = { totalPages: 0, totalAbsenceDays: 0 };
+        }
+        acc[student.name].totalPages += student.pages;
+        return acc;
+      }, {});
+
+      updateStatisticsTable(statistics);
+    }
+
+    function updateStatisticsTable(statistics) {
+      const table = document.getElementById('statisticsTable');
+      table.innerHTML = '';
+      for (const [name, data] of Object.entries(statistics)) {
+        const row = table.insertRow();
+        row.innerHTML = `
+          <td>${name}</td>
+          <td>${data.totalPages}</td>
+          <td>${data.totalAbsenceDays}</td>
+        `;
+      }
+    }
+
+    window.onload = () => {
+      const storedStudents = JSON.parse(localStorage.getItem('students'));
+      const storedAbsences = JSON.parse(localStorage.getItem('absences'));
+      const storedSavedDays = JSON.parse(localStorage.getItem('savedDays'));
+
+      if (storedStudents) students = storedStudents;
+      if (storedAbsences) absences = storedAbsences;
+      if (storedSavedDays) savedDays = storedSavedDays;
+
+      updateStudentTable();
+      updateAbsenceTable();
+      updateSavedDaysList();
+    };
+  </script>
+</body>
+</html>
